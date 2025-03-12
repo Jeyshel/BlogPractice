@@ -264,7 +264,7 @@ a.sidebar-buttons {
     align-items: center;
     filter: invert(30%);
     cursor: pointer;
-    fill: white;
+    /* fill: white; */
 }
 
 .downvote-btn > img{
@@ -272,8 +272,13 @@ a.sidebar-buttons {
     align-items: center;
     filter: invert(30%);
     cursor: pointer;
-    fill: white;
+    /* fill: white; */
 }
+
+.vote-active > img{
+    filter: invert(100%);
+}
+
 .upvote-btn > img:hover,
 .downvote-btn > img:hover{
     filter: invert(100%);

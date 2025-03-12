@@ -34,7 +34,8 @@
         </div>
  
         <span class="bypass-overlay">
-            <button class="upvote-btn" postId="<%= post._id %>">
+            <%# ensure user is logged in to allow voting %>
+            <button class="upvote-btn" postId="<%= post._id %>"> 
                 <img src="/img/upvote-icon.svg" alt="Upvote" >
                 <p class="upvote-count"><%= post.upvotes %></p>
             </button>

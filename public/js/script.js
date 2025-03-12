@@ -67,6 +67,20 @@ $(document).ready(function(){
         })
     }
 
+    $('.upvote-btn').click(function(){
+        const postId = $(this).attr('postId');
+        console.log('Button clicked, postId:', postId);
+
+        upvote(postId, this);
+
+         // Toggle the active class on the upvote button
+         $(this).toggleClass('vote-active');
+
+         // Remove the active class from the sibling downvote button
+         $(this).siblings('.downvote-btn').removeClass('vote-active');
+ 
+    });
+
     function downvote(postId, button){
         $.ajax({
             url: `/post/downvote/${postId}`,
@@ -82,17 +96,7 @@ $(document).ready(function(){
         })
     }
 
-    $('.upvote-btn').click(function(){
-        const postId = $(this).attr('postId');
-        upvote(postId, this);
-        if($(this).css('fill') == 'blue') {
-            $(this).css('fill', 'white');
-        } else {
-            $(this).css('fill', 'blue');
-            $(this).siblings('.downvote-btn').css('fill', 'white');
-        }
-    });
-
+    // Listeners
     $('.downvote-btn').click(function(){
         const postId = $(this).attr('postId');
         downvote(postId, this);

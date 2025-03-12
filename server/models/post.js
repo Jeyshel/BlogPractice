@@ -43,15 +43,11 @@ const PostSchema = new Schema({
         default: 0,
         required: true
     },
-    voters: [{
+    voted: [{
         user: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
             unique: true
-        },
-        voteType: {
-            type: String,
-            enum: ['upvote', 'downvote']
         }
     }],
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comments' }]

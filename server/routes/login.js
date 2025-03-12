@@ -269,29 +269,23 @@ router.post('/post/upvote/:id', async (req, res) => {
         const postId = req.params.id;
         const post = await Post.findById(postId);
         const user = loggeduser;
-        var found = false;
+        var found = false; // if current user has voted on post
         
-        post.voters.filter(voter => {
-            if(voter.user.toString() === user._id.toString()){
-                if(voter.voteType === 'upvote'){
-                    post.upvotes -= 1;
-                    post.voters.pull({user: user._id, voteType: 'upvote'});
-                    found = true;
-                } else if (voter.voteType === 'downvote'){
-                    post.upvotes += 1;
-                    post.downvotes -= 1;
-                    post.voters.pull({user: user._id, voteType: 'downvote'});
-                    post.voters.push({user: user._id, voteType: 'upvote'});
-                    found = true;
-                }
+        //iterate through array
+        post.voted.forEach(voter => {
+            if(voter.user.toString() === user._id.toString()){ // if user has voted
+                post.upvotes -= 1;
+                post.voted.pull({user: user._id});
+                found = true;
             }
         });
-    
-        if(!found){
+
+        if(!found){ // if user has not voted
             post.upvotes += 1;
-            post.voters.push({user: user._id, voteType: 'upvote'});
-            
+            post.voted.push({user: user._id});
+            found = true;
         }
+
         await post.save();
         res.json({ success: true, upvotes: post.upvotes, downvotes: post.downvotes });
 
@@ -301,41 +295,78 @@ router.post('/post/upvote/:id', async (req, res) => {
     }
 });
 
-router.post('/post/downvote/:id', async (req, res) => {
-    try {
-        const postId = req.params.id;
-        const post = await Post.findById(postId);
-        const user = loggeduser;
-        var found = false;
+// router.post('/post/upvote/:id', async (req, res) => {
+//     try {
+//         const postId = req.params.id;
+//         const post = await Post.findById(postId);
+//         const user = loggeduser;
+//         var found = false;
         
-        post.voters.filter(voter => {
-            if(voter.user.toString() === user._id.toString()){
-                if(voter.voteType === 'downvote'){
-                    post.downvotes -= 1;
-                    post.voters.pull({user: user._id, voteType: 'downvote'});
-                    found = true;
-                } else if (voter.voteType === 'upvote'){
-                    post.downvotes += 1;
-                    post.upvotes -= 1;
-                    post.voters.pull({user: user._id, voteType: 'upvote'});
-                    post.voters.push({user: user._id, voteType: 'downvote'});
-                    found = true;
-                }
-            }
-        });
+//         post.voters.filter(voter => {
+//             if(voter.user.toString() === user._id.toString()){
+//                 if(voter.voteType === 'upvote'){
+//                     post.upvotes -= 1;
+//                     post.voters.pull({user: user._id, voteType: 'upvote'});
+//                     found = true;
+//                 } else if (voter.voteType === 'downvote'){
+//                     post.upvotes += 1;
+//                     post.downvotes -= 1;
+//                     post.voters.pull({user: user._id, voteType: 'downvote'});
+//                     post.voters.push({user: user._id, voteType: 'upvote'});
+//                     found = true;
+//                 }
+//             }
+//         });
     
-        if(!found){
-            post.downvotes += 1;
-            post.voters.push({user: user._id, voteType: 'downvote'});
+//         if(!found){
+//             post.upvotes += 1;
+//             post.voters.push({user: user._id, voteType: 'upvote'});
             
-        }
-        await post.save();
-        res.json({ success: true, downvotes: post.downvotes, upvotes: post.upvotes });
+//         }
+//         await post.save();
+//         res.json({ success: true, upvotes: post.upvotes, downvotes: post.downvotes });
 
-    } catch (error) {
-        console.error('Error downvoting post:', error);
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
-});
+//     } catch (error) {
+//         console.error('Error upvoting post:', error);
+//         res.status(500).json({ message: 'Internal Server Error' });
+//     }
+// });
+
+// router.post('/post/downvote/:id', async (req, res) => {
+//     try {
+//         const postId = req.params.id;
+//         const post = await Post.findById(postId);
+//         const user = loggeduser;
+//         var found = false;
+        
+//         post.voters.filter(voter => {
+//             if(voter.user.toString() === user._id.toString()){
+//                 if(voter.voteType === 'downvote'){
+//                     post.downvotes -= 1;
+//                     post.voters.pull({user: user._id, voteType: 'downvote'});
+//                     found = true;
+//                 } else if (voter.voteType === 'upvote'){
+//                     post.downvotes += 1;
+//                     post.upvotes -= 1;
+//                     post.voters.pull({user: user._id, voteType: 'upvote'});
+//                     post.voters.push({user: user._id, voteType: 'downvote'});
+//                     found = true;
+//                 }
+//             }
+//         });
+    
+//         if(!found){
+//             post.downvotes += 1;
+//             post.voters.push({user: user._id, voteType: 'downvote'});
+            
+//         }
+//         await post.save();
+//         res.json({ success: true, downvotes: post.downvotes, upvotes: post.upvotes });
+
+//     } catch (error) {
+//         console.error('Error downvoting post:', error);
+//         res.status(500).json({ message: 'Internal Server Error' });
+//     }
+// });
 
 module.exports = router;
