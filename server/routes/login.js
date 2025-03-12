@@ -264,65 +264,114 @@ router.post('/update-profile/:id', authMiddleware, upload.single('image'), async
 });
 
 // UPVOTES AND DOWNVOTES
-router.post('/post/upvote/:id', async (req, res) => {
-    try {
-        const postId = req.params.id;
-        const post = await Post.findById(postId);
-        const user = loggeduser;
-        var found = false; // if current user has voted on post
+// Note : In JavaScript, the forEach method can take a callback function
+        // with up to three arguments: the current element, the index of the current 
+        // element, and the array being traversed. 
+        router.post('/post/upvote/:id', async (req, res) => {
+            try {
+                const postId = req.params.id;
+                const post = await Post.findById(postId);
+                if (!post) {
+                    return res.status(404).json({ message: 'Post not found' });
+                }
+                const user = loggeduser;
+                let found = false;
         
-        //iterate through array
-        post.voted.forEach(voter => {
-            if(voter.user.toString() === user._id.toString()){ // if user has voted
-                post.upvotes -= 1;
-                post.voted.pull({user: user._id});
-                found = true;
+                // Iterate through the voters array to find if the user has already voted
+                post.voted.forEach((voter, index) => {
+                    if (voter.user.toString() === user._id.toString()) {
+                        if (voter.voteType === 'upvote') {
+                            post.upvotes -= 1;
+                            post.voted.splice(index, 1); // Remove the upvote
+                        } else if (voter.voteType === 'downvote') {
+                            post.upvotes += 1;
+                            post.downvotes -= 1;
+                            post.voted[index].voteType = 'upvote'; // Change the vote type to upvote
+                            console.log('Testing UPVOTE Route');
+                        }
+                        found = true;
+                    }
+                });
+        
+                // If the user has not voted before, add a new upvote record
+                if (!found) {
+                    post.upvotes += 1;
+                    post.voted.push({ user: user._id, voteType: 'upvote' });
+                }
+        
+                await post.save();
+                res.json({ success: true, upvotes: post.upvotes, downvotes: post.downvotes });
+        
+            } catch (error) {
+                console.error('Error upvoting post:', error);
+                res.status(500).json({ message: 'Internal Server Error' });
             }
         });
 
-        if(!found){ // if user has not voted
-            post.upvotes += 1;
-            post.voted.push({user: user._id});
-            found = true;
-        }
+        router.post('/post/downvote/:id', async (req, res) => {
+            try {
+                const postId = req.params.id;
+                const post = await Post.findById(postId);
+                if (!post) {
+                    return res.status(404).json({ message: 'Post not found' });
+                }
+                const user = loggeduser;
+                let found = false;
+        
+                // Iterate through the voters array to find if the user has already voted
+                post.voted.forEach((voter, index) => {
+                    if (voter.user.toString() === user._id.toString()) {
+                        if (voter.voteType === 'downvote') {
+                            post.downvotes -= 1;
+                            post.voted.splice(index, 1); // Remove the downvote
+                        } else if (voter.voteType === 'upvote') {
+                            post.downvotes += 1;
+                            post.upvotes -= 1;
+                            post.voted[index].voteType = 'downvote'; // Change the vote type to downvote
+                            console.log('Testing DOWNVOTE Route');
+                        }
+                        found = true;
+                    }
+                });
+        
+                // If the user has not voted before, add a new downvote record
+                if (!found) {
+                    post.downvotes += 1;
+                    post.voted.push({ user: user._id, voteType: 'downvote' });
+                }
+        
+                await post.save();
+                res.json({ success: true, upvotes: post.upvotes, downvotes: post.downvotes });
+        
+            } catch (error) {
+                console.error('Error downvoting post:', error);
+                res.status(500).json({ message: 'Internal Server Error' });
+            }
+        });
 
-        await post.save();
-        res.json({ success: true, upvotes: post.upvotes, downvotes: post.downvotes });
-
-    } catch (error) {
-        console.error('Error upvoting post:', error);
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
-});
-
+//MINE
 // router.post('/post/upvote/:id', async (req, res) => {
 //     try {
 //         const postId = req.params.id;
 //         const post = await Post.findById(postId);
 //         const user = loggeduser;
-//         var found = false;
+//         var found = false; // if current user has voted on post
         
-//         post.voters.filter(voter => {
-//             if(voter.user.toString() === user._id.toString()){
-//                 if(voter.voteType === 'upvote'){
-//                     post.upvotes -= 1;
-//                     post.voters.pull({user: user._id, voteType: 'upvote'});
-//                     found = true;
-//                 } else if (voter.voteType === 'downvote'){
-//                     post.upvotes += 1;
-//                     post.downvotes -= 1;
-//                     post.voters.pull({user: user._id, voteType: 'downvote'});
-//                     post.voters.push({user: user._id, voteType: 'upvote'});
-//                     found = true;
-//                 }
+//         //iterate through array
+//         post.voted.forEach(voter => {
+//             if(voter.user.toString() === user._id.toString()){ // if user has voted
+//                 post.upvotes -= 1;
+//                 post.voted.pull({user: user._id});
+//                 found = true;
 //             }
 //         });
-    
-//         if(!found){
+
+//         if(!found){ // if user has not voted
 //             post.upvotes += 1;
-//             post.voters.push({user: user._id, voteType: 'upvote'});
-            
+//             post.voted.push({user: user._id});
+//             found = true;
 //         }
+
 //         await post.save();
 //         res.json({ success: true, upvotes: post.upvotes, downvotes: post.downvotes });
 
@@ -332,39 +381,34 @@ router.post('/post/upvote/:id', async (req, res) => {
 //     }
 // });
 
+// MINE
 // router.post('/post/downvote/:id', async (req, res) => {
 //     try {
 //         const postId = req.params.id;
 //         const post = await Post.findById(postId);
 //         const user = loggeduser;
-//         var found = false;
+//         var found = false; // if current user has voted on post
         
-//         post.voters.filter(voter => {
-//             if(voter.user.toString() === user._id.toString()){
-//                 if(voter.voteType === 'downvote'){
-//                     post.downvotes -= 1;
-//                     post.voters.pull({user: user._id, voteType: 'downvote'});
-//                     found = true;
-//                 } else if (voter.voteType === 'upvote'){
-//                     post.downvotes += 1;
-//                     post.upvotes -= 1;
-//                     post.voters.pull({user: user._id, voteType: 'upvote'});
-//                     post.voters.push({user: user._id, voteType: 'downvote'});
-//                     found = true;
-//                 }
+//         //iterate through array
+//         post.voted.forEach(voter => {
+//             if(voter.user.toString() === user._id.toString()){ // if user has voted
+//                 post.downvotes -= 1;
+//                 post.voted.pull({user: user._id});
+//                 found = true;
 //             }
 //         });
-    
-//         if(!found){
+
+//         if(!found){ // if user has not voted
 //             post.downvotes += 1;
-//             post.voters.push({user: user._id, voteType: 'downvote'});
-            
+//             post.voted.push({user: user._id});
+//             found = true;
 //         }
+
 //         await post.save();
-//         res.json({ success: true, downvotes: post.downvotes, upvotes: post.upvotes });
+//         res.json({ success: true, upvotes: post.upvotes, downvotes: post.downvotes });
 
 //     } catch (error) {
-//         console.error('Error downvoting post:', error);
+//         console.error('Error upvoting post:', error);
 //         res.status(500).json({ message: 'Internal Server Error' });
 //     }
 // });

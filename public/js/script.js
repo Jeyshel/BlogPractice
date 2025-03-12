@@ -67,15 +67,17 @@ $(document).ready(function(){
         })
     }
 
+
+    // TWEAK LISTENERS active state when switching between upvote and downvote
+    //Listener
     $('.upvote-btn').click(function(){
         const postId = $(this).attr('postId');
-        console.log('Button clicked, postId:', postId);
+        console.log('Upvote, postId:', postId);
 
         upvote(postId, this);
 
          // Toggle the active class on the upvote button
          $(this).toggleClass('vote-active');
-
          // Remove the active class from the sibling downvote button
          $(this).siblings('.downvote-btn').removeClass('vote-active');
  
@@ -99,13 +101,13 @@ $(document).ready(function(){
     // Listeners
     $('.downvote-btn').click(function(){
         const postId = $(this).attr('postId');
+        console.log('Downvote, postId:', postId);
+
         downvote(postId, this);
-        if($(this).css('fill') == 'blue') {
-            $(this).css('fill', 'white');
-        } else {
-            $(this).css('fill', 'blue');
-            $(this).siblings('.upvote-btn').css('fill', 'white');
-        }
+        // Toggle the active class on the upvote button
+        $(this).toggleClass('vote-active');
+        // Remove the active class from the sibling downvote button
+        $(this).siblings('.upvote-btn').removeClass('vote-active');
     });
 
 });
