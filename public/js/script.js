@@ -68,7 +68,7 @@ $(document).ready(function(){
     }
 
 
-    // TWEAK LISTENERS active state when switching between upvote and downvote
+    // TWEAK LISTENERS, active state disappears when switching between upvote and downvote
     //Listener
     $('.upvote-btn').click(function(){
         const postId = $(this).attr('postId');
